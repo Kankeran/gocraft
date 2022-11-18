@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"gocraft/control"
 	"gocraft/graphics"
-	"gocraft/services"
 	"gocraft/world"
 	"runtime"
 
-	"github.com/go-gl/gl/v3.3-core/gl"
+	"github.com/go-gl/gl/v4.5-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
 )
@@ -43,7 +42,6 @@ var shader *graphics.ShaderProgram
 
 var deltaTime, lastFrame float64
 
-var container *services.Container
 var thisWorld *world.World
 
 func main() {
@@ -53,10 +51,10 @@ func main() {
 	}
 	defer glfw.Terminate()
 
-	glfw.WindowHint(glfw.ContextVersionMajor, 3)
-	glfw.WindowHint(glfw.ContextVersionMinor, 3)
+	glfw.WindowHint(glfw.ContextVersionMajor, 4)
+	glfw.WindowHint(glfw.ContextVersionMinor, 5)
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
-	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
+	// glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 	window, err := glfw.CreateWindow(windowWidth, windowHeight, "gocraft", nil, nil)
 	if err != nil {
 		panic(err)
@@ -78,15 +76,14 @@ func main() {
 	gl.GetIntegerv(gl.MAX_VERTEX_ATTRIBS, &nrAttributes)
 	fmt.Println("Maximum nr of vertex attributes supported:", nrAttributes)
 
-	container = services.NewContainer()
-	container.Consume()
-	shader = container.GetService(graphics.ServiceShaderProgramBasicTexture).(*graphics.ShaderProgram)
+	shader = graphics.ProvideShaderProgramBasicTexture()
 	shader.Use()
 	shader.SetUniformMat4("projection\x00", mgl32.Perspective(mgl32.DegToRad(fov), float32(windowWidth)/float32(windowHeight), drawMinDistance, drawMaxDistance))
-	shader.SetUniformTexture2D("tex\x00", container.GetService(graphics.ServiceTextureAtlas).(*graphics.Texture), 0)
+	shader.SetUniformTexture2D("tex\x00", graphics.ProvideTextureAtlas(), 0)
 
-	thisWorld = container.GetService(world.ServiceWorld).(*world.World)
-	camera = container.GetService(control.ServiceCamera).(*control.Camera)
+	thisWorld = world.ProvideWorld()
+	thisWorld.Initialize()
+	camera = control.ProvideCamera()
 
 	// basicShader = container.GetService("ShaderProgram.basic").(*graphics.ShaderProgram)
 	// basicShader.Use()
@@ -99,7 +96,7 @@ func main() {
 	gl.Enable(gl.CULL_FACE)
 	gl.CullFace(gl.FRONT)
 	// gl.FrontFace(gl.CW)
-	// glfw.SwapInterval(1) //vsync
+	glfw.SwapInterval(0) // vsync 0-off, 1-on
 	var counter int = 0
 	// for _, renderer := range renderers {
 	// 	renderer.CalculateMesh()
@@ -192,10 +189,10 @@ func processInput(window *glfw.Window) {
 		switch movementModel {
 		case 0:
 			movementModel = 1
-			camera.SetMovementModel(container.GetService(control.ServiceCameraMovementModelFps).(*control.CameraMovementModel))
+			camera.SetMovementModel(control.ProvideCameraMovementModelFps())
 		default:
 			movementModel = 0
-			camera.SetMovementModel(container.GetService(control.ServiceCameraMovementModelFree).(*control.CameraMovementModel))
+			camera.SetMovementModel(control.ProvideCameraMovementModelFree())
 		}
 	}
 	if keyPressed3 && window.GetKey(glfw.Key3) == glfw.Release {
