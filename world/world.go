@@ -117,7 +117,7 @@ func (w *World) FindBlockByRaycast(from, direction mgl32.Vec3, length float32) *
 		}
 
 		currentPoint = from.Add(direction.Mul(distance))
-		halfPoints = append(halfPoints, lastPoint.Add(currentPoint.Sub(lastPoint).Mul(0.5)))
+		halfPoints = append(halfPoints, lastPoint.Add(currentPoint).Mul(0.5))
 		lastPoint = currentPoint
 	}
 

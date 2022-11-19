@@ -7,7 +7,8 @@ import (
 	"gocraft/world"
 	"runtime"
 
-	"github.com/go-gl/gl/v4.5-core/gl"
+	"gocraft/gl"
+
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
 )

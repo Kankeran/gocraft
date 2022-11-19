@@ -1,7 +1,8 @@
 package graphics
 
 import (
-	"github.com/go-gl/gl/v4.5-core/gl"
+	"gocraft/gl"
+
 	"github.com/go-gl/mathgl/mgl32"
 )
 

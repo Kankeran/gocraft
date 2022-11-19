@@ -4,10 +4,17 @@ import (
 	"embed"
 	"fmt"
 	"strings"
+	"unsafe"
 
-	"github.com/go-gl/gl/v4.5-core/gl"
+	"gocraft/gl"
+
 	"github.com/go-gl/mathgl/mgl32"
 )
+
+/*
+#include <stdlib.h>
+*/
+import "C"
 
 //go:embed shaders
 var shaderResources embed.FS
@@ -55,9 +62,10 @@ func compileShader(sourcePath string, shaderType uint32) (uint32, error) {
 	}
 
 	shader := gl.CreateShader(shaderType)
-	csources, free := gl.Strs(string(source))
-	gl.ShaderSource(shader, 1, csources, nil)
-	free()
+	length := int32(len(source))
+	csources := (*uint8)(C.CBytes(source))
+	gl.ShaderSource(shader, 1, &csources, &length)
+	C.free(unsafe.Pointer(csources))
 	gl.CompileShader(shader)
 
 	var status int32

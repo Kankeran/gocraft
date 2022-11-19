@@ -7,7 +7,7 @@ import (
 	"image/draw"
 	"image/png"
 
-	"github.com/go-gl/gl/v4.5-core/gl"
+	"gocraft/gl"
 )
 
 //go:embed textures
@@ -30,9 +30,6 @@ func NewTexture(name string) (*Texture, error) {
 	}
 
 	rgba := image.NewRGBA(img.Bounds())
-	if rgba.Stride != rgba.Rect.Size().X*4 {
-		return nil, fmt.Errorf("unsupported stride")
-	}
 	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
 
 	var texture uint32
