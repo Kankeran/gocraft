@@ -44,9 +44,11 @@ func NewChunk(position mgl32.Vec3, blocks []*Block) *Chunk {
 func (c *Chunk) CalculateMesh() {
 	gl.BindVertexArray(c.vao)
 
-	var vertices []float32
-	var indsCount uint32
-	var blockPosition mgl32.Vec3
+	var (
+		vertices      []float32
+		indsCount     uint32
+		blockPosition mgl32.Vec3
+	)
 	for xIndex, xyblocks := range c.blocks {
 		for yIndex, xblocks := range xyblocks {
 			for zIndex, block := range xblocks {

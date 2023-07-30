@@ -19,31 +19,34 @@ func init() {
 	runtime.LockOSThread()
 }
 
-var drawMode uint32 = gl.FILL
-var keyPressed = false
-var cursorHasDisabled = false
-var keyPressed2 = false
-var keyPressed3 = false
-var movementModel = 0
+var (
+	drawMode          uint32  = gl.FILL
+	keyPressed                = false
+	cursorHasDisabled         = false
+	keyPressed2               = false
+	keyPressed3               = false
+	movementModel             = 0
+	fov               float32 = 60.0
+	drawMinDistance   float32 = 0.1
+	drawMaxDistance   float32 = 1000.0
 
-const windowWidth = 800
-const windowHeight = 600
+	// camera
+	speed  float32 = 8
+	camera *control.Camera
 
-var fov float32 = 60.0
-var drawMinDistance float32 = 0.1
-var drawMaxDistance float32 = 1000.0
+	shader *graphics.ShaderProgram
 
-// camera
-var speed float32 = 8
-var camera *control.Camera
+	//  basicShader *graphics.ShaderProgram
 
-var shader *graphics.ShaderProgram
+	deltaTime, lastFrame float64
 
-// var basicShader *graphics.ShaderProgram
+	thisWorld *world.World
+)
 
-var deltaTime, lastFrame float64
-
-var thisWorld *world.World
+const (
+	windowWidth  = 1600
+	windowHeight = 900
+)
 
 func main() {
 	err := glfw.Init()
@@ -98,12 +101,15 @@ func main() {
 	gl.CullFace(gl.FRONT)
 	// gl.FrontFace(gl.CW)
 	glfw.SwapInterval(0) // vsync 0-off, 1-on
-	var counter int = 0
 	// for _, renderer := range renderers {
 	// 	renderer.CalculateMesh()
 	// }
 	thisWorld.CalculateMesh()
-	var currentTime float64
+	var (
+		counter     int = 0
+		currentTime float64
+		countTime   float64
+	)
 
 	for !window.ShouldClose() {
 
@@ -131,9 +137,11 @@ func main() {
 		// 	line.Render(basicShader, l[0], l[1])
 		// }
 
+		countTime += deltaTime
 		counter++
-		if counter == 30 {
-			window.SetTitle(fmt.Sprint("gocraft | FPS:", 1.0/deltaTime))
+		if countTime >= 1 {
+			window.SetTitle(fmt.Sprint("gocraft | FPS:", counter))
+			countTime -= 1
 			counter = 0
 			// PrintMemUsage()
 		}

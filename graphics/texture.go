@@ -6,6 +6,7 @@ import (
 	"image"
 	"image/draw"
 	"image/png"
+	"unsafe"
 
 	"gocraft/gl"
 )
@@ -33,24 +34,27 @@ func NewTexture(name string) (*Texture, error) {
 	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
 
 	var texture uint32
-	gl.GenTextures(1, &texture)
-	gl.BindTexture(gl.TEXTURE_2D, texture)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
-	gl.TexImage2D(
-		gl.TEXTURE_2D,
+	gl.CreateTextures(gl.TEXTURE_2D, 1, &texture)
+	gl.TextureStorage2D(texture, 1, gl.RGBA8, int32(rgba.Rect.Dx()), int32(rgba.Rect.Dy()))
+
+	gl.TextureParameteri(texture, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+	gl.TextureParameteri(texture, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+	gl.TextureParameteri(texture, gl.TEXTURE_WRAP_S, gl.REPEAT)
+	gl.TextureParameteri(texture, gl.TEXTURE_WRAP_T, gl.REPEAT)
+
+	gl.TextureSubImage2D(
+		texture,
 		0,
-		gl.RGBA,
-		int32(rgba.Rect.Size().X),
-		int32(rgba.Rect.Size().Y),
 		0,
+		0,
+		int32(rgba.Rect.Dx()),
+		int32(rgba.Rect.Dy()),
 		gl.RGBA,
 		gl.UNSIGNED_BYTE,
-		gl.Ptr(rgba.Pix))
+		unsafe.Pointer(&rgba.Pix[0]),
+	)
 
-	return &Texture{texture, rgba.Rect.Size().X, rgba.Rect.Size().Y}, nil
+	return &Texture{texture, rgba.Rect.Dx(), rgba.Rect.Dy()}, nil
 }
 
 func (t *Texture) Bind() {
